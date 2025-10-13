@@ -1,0 +1,12 @@
+.git
+.github
+.vscode
+.idea
+bin
+obj
+artifacts
+*.nupkg
+*.snupkg
+*.user
+*.suo
+*.zip

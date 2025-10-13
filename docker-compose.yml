@@ -1,0 +1,62 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ivansostarko/otto-crypt-cs:dev
+    container_name: otto-crypt-cs
+    working_dir: /work
+    environment:
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+      - DOTNET_NOLOGO=1
+    volumes:
+      # Mount your repo into the container at /src
+      - ./:/src:rw
+      # Optional: place to write build outputs/packages
+      - ${ARTIFACTS_PATH:-./artifacts}:/artifacts:rw
+    command: bash -lc "tail -f /dev/null"
+
+  setup:
+    image: ivansostarko/otto-crypt-cs:dev
+    working_dir: /src
+    volumes:
+      - ./:/src:rw
+      - ${ARTIFACTS_PATH:-./artifacts}:/artifacts:rw
+    entrypoint: ["bash","-lc"]
+    command: |
+      set -euo pipefail
+      dotnet --info
+      dotnet restore IvanSostarko.OttoCrypt/IvanSostarko.OttoCrypt.csproj
+      dotnet build IvanSostarko.OttoCrypt/IvanSostarko.OttoCrypt.csproj -c Release
+      # Optional: pack a NuGet package into /artifacts
+      dotnet pack IvanSostarko.OttoCrypt/IvanSostarko.OttoCrypt.csproj -c Release -o /artifacts
+
+  # Optional quickstart console to experiment with the library without changing your repo.
+  quickstart:
+    image: ivansostarko/otto-crypt-cs:dev
+    working_dir: /work
+    volumes:
+      - ./:/src:ro
+      - ${ARTIFACTS_PATH:-./artifacts}:/artifacts:rw
+    entrypoint: ["bash","-lc"]
+    command: |
+      set -euo pipefail
+      rm -rf /work/QuickStart && mkdir -p /work/QuickStart
+      cd /work/QuickStart
+      dotnet new console --framework net8.0 --no-restore
+      dotnet new gitignore >/dev/null 2>&1 || true
+      # Add project reference to the library in /src
+      dotnet add reference /src/IvanSostarko.OttoCrypt/IvanSostarko.OttoCrypt.csproj
+      # Replace Program.cs with a tiny example
+      cat > Program.cs <<'CS'
+using System;
+using System.Text;
+using IvanSostarko.OttoCrypt;
+var otto = new OttoCrypt();
+var (cipher, header) = otto.EncryptString(Encoding.UTF8.GetBytes("Hello OTTO"), new Options { Password = "x" });
+var plain = otto.DecryptString(cipher, header, new Options { Password = "x" });
+Console.WriteLine(Encoding.UTF8.GetString(plain));
+CS
+      dotnet restore
+      dotnet run -c Release

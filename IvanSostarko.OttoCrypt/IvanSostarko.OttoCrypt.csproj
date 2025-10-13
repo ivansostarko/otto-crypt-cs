@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <AssemblyName>IvanSostarko.OttoCrypt</AssemblyName>
+    <RootNamespace>IvanSostarko.OttoCrypt</RootNamespace>
+    <Authors>Ivan Doe</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>OTTO Crypt for .NET: AES-256-GCM + HKDF-SIV-style streaming AEAD with Argon2id and X25519; interoperable with Laravel/Node/Python implementations.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Sodium.Core" Version="1.3.1" />
+  </ItemGroup>
+</Project>
